@@ -69,15 +69,6 @@ The library provides a few helper methods for common tasks. Currently the only o
 
 Which will help you generate the tracking tag parameters required to link certain messages together (for example: invite sent -> invite response -> application added).
 
-Examples
------------------
-
-1. The Basics (page request, user demographic, installs)
-2. Invites (same as stream posts)
-3. Third-Party Communication Click (ad/partner click tracking)
-4. Custom Events
-
-
 Full Class Reference
 -----------------
 

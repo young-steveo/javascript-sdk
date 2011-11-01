@@ -32,10 +32,10 @@ KontagentApi.prototype._sendHttpRequestViaImgTag = function(url, successCallback
 	// The onerror callback will always be triggered because no image header is returned by our API.
 	// Which is fine because the request would have still gone through.
 	if (successCallback) {
-		img.onerror = successallback;
+		img.onerror = successCallback;
 		img.onload = successCallback;
 	}
-	
+
 	img.src = url;
 }
 
@@ -47,7 +47,10 @@ KontagentApi.prototype._sendHttpRequestViaImgTag = function(url, successCallback
 * @param {function} [successCallback] The callback function to execute once message has been sent successfully
 * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
 */
-KontagentApi.prototype._sendMessageViaImgTag = function(messageType, params, successCallback, validationErrorCallback) {
+KontagentApi.prototype._sendMessage = function(messageType, params, successCallback, validationErrorCallback) {
+	// add a timestamp param to prevent browser caching
+	params['ts'] =  new Date().getTime();
+
 	if (this._validateParams == true) {
 		var result;
 
@@ -165,7 +168,7 @@ KontagentApi.prototype.trackInviteSent = function(userId, recipientUserIds, uniq
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
 	}
 
-	this._sendMessageViaImgTag("ins", apiParams, successCallback, validationErrorCallback);
+	this._sendMessage("ins", apiParams, successCallback, validationErrorCallback);
 }
 
 /*
@@ -195,7 +198,7 @@ KontagentApi.prototype.trackInviteResponse = function(uniqueTrackingTag, optiona
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
 	}	
 	
-	this._sendMessageViaImgTag("inr", apiParams, successCallback, validationErrorCallback);
+	this._sendMessage("inr", apiParams, successCallback, validationErrorCallback);
 }
 
 /*
@@ -226,7 +229,7 @@ KontagentApi.prototype.trackNotificationSent = function(userId, recipientUserIds
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
 	}
 	
-	this._sendMessageViaImgTag("nts", apiParams, successCalback, validationErrorCallback);
+	this._sendMessage("nts", apiParams, successCalback, validationErrorCallback);
 }
 
 /*
@@ -256,7 +259,7 @@ KontagentApi.prototype.trackNotificationResponse = function(uniqueTrackingTag, o
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
 	}
 	
-	this._sendMessageViaImgTag("ntr", apiParams, successCallback, validationErrorCallback);
+	this._sendMessage("ntr", apiParams, successCallback, validationErrorCallback);
 }
 
 /*
@@ -287,7 +290,7 @@ KontagentApi.prototype.trackNotificationEmailSent = function(userId, recipientUs
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
 	}
 
-	this._sendMessageViaImgTag("nes", apiParams, successCallback, validationErrorCallback);
+	this._sendMessage("nes", apiParams, successCallback, validationErrorCallback);
 }
 
 /*
@@ -318,7 +321,7 @@ KontagentApi.prototype.trackNotificationEmailResponse = function(uniqueTrackingT
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
 	}
 	
-	this._sendMessageViaImgTag("nei", apiParams, successCallback, validationErrorCallback);
+	this._sendMessage("nei", apiParams, successCallback, validationErrorCallback);
 }
 
 /*
@@ -350,7 +353,7 @@ KontagentApi.prototype.trackStreamPost = function(userId, uniqueTrackingTag, typ
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
 	}
 
-	this._sendMessageViaImgTag("pst", apiParams, successCallback, validationErrorCallback);
+	this._sendMessage("pst", apiParams, successCallback, validationErrorCallback);
 }
 
 /*
@@ -383,7 +386,7 @@ KontagentApi.prototype.trackStreamPostResponse = function(uniqueTrackingTag, typ
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
 	}
 
-	this._sendMessageViaImgTag("psr", apiParams, successCallback, validationErrorCallback);
+	this._sendMessage("psr", apiParams, successCallback, validationErrorCallback);
 }
 
 /*
@@ -414,7 +417,7 @@ KontagentApi.prototype.trackEvent = function(userId, eventName, optionalParams, 
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
 	}	
 
-	this._sendMessageViaImgTag("evt", apiParams, successCallback, validationErrorCallback);
+	this._sendMessage("evt", apiParams, successCallback, validationErrorCallback);
 }
 
 /*
@@ -427,7 +430,7 @@ KontagentApi.prototype.trackEvent = function(userId, eventName, optionalParams, 
 *	See the genUniqueTrackingTag() helper method.
 * @param {string} [optionalParams.shortUniqueTrackingTag] 8-digit hex string used to match 
 *	ThirdPartyCommClicks->ApplicationAdded messages. 
-*	See the genShortUniqueTrackingTag() helper method.
+*	See the genShortUniqueTrackingTag() hesendMessagelper method.
 * @param {function} [successCallback] The callback function to execute once message has been sent successfully
 * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
 */
@@ -439,7 +442,7 @@ KontagentApi.prototype.trackApplicationAdded = function(userId, optionalParams, 
 		if (optionalParams.shortUniqueTrackingTag) { apiParams.su = optionalParams.shortUniqueTrackingTag; }
 	}
 
-	this._sendMessageViaImgTag("apa", apiParams, successCallback, validationErrorCallback);
+	this._sendMessage("apa", apiParams, successCallback, validationErrorCallback);
 }
 
 /*
@@ -452,7 +455,7 @@ KontagentApi.prototype.trackApplicationAdded = function(userId, optionalParams, 
 KontagentApi.prototype.trackApplicationRemoved = function(userId, successCallback, validationErrorCallback) {
 	var apiParams = {s : userId};
 	
-	this._sendMessageViaImgTag("apr", apiParams, successCallback, validationErrorCallback);
+	this._sendMessage("apr", apiParams, successCallback, validationErrorCallback);
 }
 
 /*
@@ -483,7 +486,7 @@ KontagentApi.prototype.trackThirdPartyCommClick = function(type, shortUniqueTrac
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
 	}	
 	
-	this._sendMessageViaImgTag("ucc", apiParams, successCallback, validationErrorCallback);
+	this._sendMessage("ucc", apiParams, successCallback, validationErrorCallback);
 }
 
 /*
@@ -498,8 +501,7 @@ KontagentApi.prototype.trackThirdPartyCommClick = function(type, shortUniqueTrac
 */
 KontagentApi.prototype.trackPageRequest = function(userId, optionalParams, successCallback, validationErrorCallback) {
 	var apiParams = {
-		s : userId,
-		ts : Math.round(new Date().getTime() / 1000)
+		s : userId
 	};
 	
 	if (optionalParams != null && typeof optionalParams != 'undefined') {
@@ -507,7 +509,7 @@ KontagentApi.prototype.trackPageRequest = function(userId, optionalParams, succe
 		if (optionalParams.pageAddress) { apiParams.u = optionalParams.pageAddress; }
 	}
 
-	this._sendMessageViaImgTag("pgr", apiParams, successCallback, validationErrorCallback);
+	this._sendMessage("pgr", apiParams, successCallback, validationErrorCallback);
 }
 
 /*
@@ -532,7 +534,7 @@ KontagentApi.prototype.trackUserInformation = function (userId, optionalParams, 
 		if (optionalParams.friendCount) { apiParams.f = optionalParams.friendCount; }
 	}
 	
-	this._sendMessageViaImgTag("cpu", apiParams, successCallback, validationErrorCallback);
+	this._sendMessage("cpu", apiParams, successCallback, validationErrorCallback);
 }
 
 /*
@@ -557,7 +559,7 @@ KontagentApi.prototype.trackGoalCount = function(userId, optionalParams, success
 		if (optionalParams.goalCount4) { apiParams.gc4 = optionalParams.goalCount4; }
 	}
 
-	this._sendMessageViaImgTag("gci", apiParams, successCallback, validationErrorCallback);
+	this._sendMessage("gci", apiParams, successCallback, validationErrorCallback);
 }
 
 /*
@@ -586,7 +588,7 @@ KontagentApi.prototype.trackRevenue = function(userId, value, optionalParams, su
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
 	}
 
-	this._sendMessageViaImgTag("mtu", apiParams, successCallback, validationErrorCallback);
+	this._sendMessage("mtu", apiParams, successCallback, validationErrorCallback);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
