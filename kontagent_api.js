@@ -79,7 +79,7 @@ KontagentApi.prototype._sendMessage = function(messageType, params, successCallb
 		}
 	}
 
-	this._sendHttpRequestViaImgTag(url);
+	this._sendHttpRequestViaImgTag(url, successCallback);
 }
 
 /*
