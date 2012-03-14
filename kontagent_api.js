@@ -8,12 +8,18 @@
 * @param {bool} [optionalParams.useTestServer] Whether to send messages to the Kontagent Test Server
 * @param {bool} [optionalParams.validateParams] Whether to validate the parameters passed into the tracking method
 */
-function KontagentApi(apiKey, optionalParams) {
+function KontagentApi(apiKey, optionalParams) 
+{
+	this._sdkVersion = "j00';
+
 	this._baseApiUrl = "http://api.geo.kontagent.net/api/v1/";
 	this._baseHttpsApiUrl = "https://api.geo.kontagent.net/api/v1/";
 	this._baseTestServerUrl = "http://test-server.kontagent.com/api/v1/";
 
 	this._apiKey = apiKey;
+
+	// this flag represents whether a message has been fired off yet.
+	this._hasSentMessage = false; 
 
 	if (optionalParams) {
 		this._useTestServer = (optionalParams.useTestServer) ? optionalParams.useTestServer : false;
@@ -22,7 +28,97 @@ function KontagentApi(apiKey, optionalParams) {
 	}
 }
 
-/*{
+/*
+* Converts a string to the base-64 encoded version of the string.
+*
+* @param {string} data The data string to be encoded
+*
+* @return {string} The base64 encoded string
+*/
+KontagentApi.prototype._base64Encode = function(data) 
+{
+    var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+    var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
+        ac = 0,
+        enc = "",
+        tmp_arr = [];
+ 
+    if (!data) {
+        return data;
+    }
+ 
+    data = this._utf8Encode(data + '');
+ 
+    do { // pack three octets into four hexets
+        o1 = data.charCodeAt(i++);
+        o2 = data.charCodeAt(i++);
+        o3 = data.charCodeAt(i++);
+ 
+        bits = o1 << 16 | o2 << 8 | o3;
+ 
+        h1 = bits >> 18 & 0x3f;
+        h2 = bits >> 12 & 0x3f;
+        h3 = bits >> 6 & 0x3f;
+        h4 = bits & 0x3f;
+ 
+        // use hexets to index into b64, and append result to encoded string
+        tmp_arr[ac++] = b64.charAt(h1) + b64.charAt(h2) + b64.charAt(h3) + b64.charAt(h4);
+    } while (i < data.length);
+ 
+    enc = tmp_arr.join('');
+    
+    var r = data.length % 3;
+    
+    return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
+}* @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+
+/*
+* Converts a string to the UTF-8 encoded version of the string.
+*
+* @param {string} argString The data string to be encoded
+*
+* @return {string} The UTF-8 encoded string
+*/
+KontagentApi.prototype._utf8Encode = function(argString) 
+{
+	if (argString === null || typeof argString === "undefined") {
+		return "";
+	}
+
+	var string = (argString + ''); // .replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+	var utftext = '',
+		start, end, stringl = 0;
+
+	start = end = 0;
+	stringl = string.length;
+	for (var n = 0; n < stringl; n++) {
+		var c1 = string.charCodeAt(n);
+		var enc = null;
+
+		if (c1 < 128) {
+			end++;
+		} else if (c1 > 127 && c1 < 2048) {
+			enc = String.fromCharCode((c1 >> 6) | 192, (c1 & 63) | 128);
+		} else {
+			enc = String.fromCharCode((c1 >> 12) | 224, ((c1 >> 6) & 63) | 128, (c1 & 63) | 128);
+		}
+		if (enc !== null) {
+			if (end > start) {
+				utftext += string.slice(start, end);
+			}
+			utftext += enc;
+			start = end = n + 1;
+		}
+	}
+
+	if (end > start) {
+		utftext += string.slice(start, stringl);
+	}
+
+	return utftext;
+}
+
+/*
 * Sends an HTTP request by creating an <img> tag given a URL.
 *
 * @param {string} url The request URL
@@ -51,6 +147,12 @@ KontagentApi.prototype._sendHttpRequestViaImgTag = function(url, successCallback
 * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
 */
 KontagentApi.prototype._sendMessage = function(messageType, params, successCallback, validationErrorCallback) {
+	// append the version if this is the first message
+	if (!this._hasSentMessage) {
+		params['sdk'] = this._sdkVersion;
+		this.hasSentMessage = true;
+	}
+
 	// add a timestamp param to prevent browser caching
 	params['ts'] =  new Date().getTime();
 
@@ -158,6 +260,7 @@ KontagentApi.prototype.genShortUniqueTrackingTag = function() {
 * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
 * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
 * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+* @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
 * @param {function} [successCallback] The callback function to execute once message has been sent successfully
 * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
 */
@@ -172,6 +275,7 @@ KontagentApi.prototype.trackInviteSent = function(userId, recipientUserIds, uniq
 		if (optionalParams.subtype1) { apiParams.st1 = optionalParams.subtype1; }
 		if (optionalParams.subtype2) { apiParams.st2 = optionalParams.subtype2; }
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
+		if (optionalParams.data) { apiParams.data = this._base64Encode(optionalParams.data); }
 	}
 
 	this._sendMessage("ins", apiParams, successCallback, validationErrorCallback);
@@ -188,6 +292,7 @@ KontagentApi.prototype.trackInviteSent = function(userId, recipientUserIds, uniq
 * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
 * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
 * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+* @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
 * @param {function} [successCallback] The callback function to execute once message has been sent successfully
 * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
 */
@@ -202,6 +307,7 @@ KontagentApi.prototype.trackInviteResponse = function(uniqueTrackingTag, optiona
 		if (optionalParams.subtype1) { apiParams.st1 = optionalParams.subtype1; }
 		if (optionalParams.subtype2) { apiParams.st2 = optionalParams.subtype2; }
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
+		if (optionalParams.data) { apiParams.data = this._base64Encode(optionalParams.data); }
 	}	
 	
 	this._sendMessage("inr", apiParams, successCallback, validationErrorCallback);
@@ -219,6 +325,7 @@ KontagentApi.prototype.trackInviteResponse = function(uniqueTrackingTag, optiona
 * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
 * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
 * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+* @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
 * @param {function} [successCallback] The callback function to execute once message has been sent successfully
 * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
 */
@@ -233,6 +340,7 @@ KontagentApi.prototype.trackNotificationSent = function(userId, recipientUserIds
 		if (optionalParams.subtype1) { apiParams.st1 = optionalParams.subtype1; }
 		if (optionalParams.subtype2) { apiParams.st2 = optionalParams.subtype2; }
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
+		if (optionalParams.data) { apiParams.data = this._base64Encode(optionalParams.data); }
 	}
 	
 	this._sendMessage("nts", apiParams, successCalback, validationErrorCallback);
@@ -249,6 +357,7 @@ KontagentApi.prototype.trackNotificationSent = function(userId, recipientUserIds
 * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
 * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
 * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+* @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
 * @param {function} [successCallback] The callback function to execute once message has been sent successfully
 * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
 */
@@ -263,6 +372,7 @@ KontagentApi.prototype.trackNotificationResponse = function(uniqueTrackingTag, o
 		if (optionalParams.subtype1) { apiParams.st1 = optionalParams.subtype1; }
 		if (optionalParams.subtype2) { apiParams.st2 = optionalParams.subtype2; }
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
+		if (optionalParams.data) { apiParams.data = this._base64Encode(optionalParams.data); }
 	}
 	
 	this._sendMessage("ntr", apiParams, successCallback, validationErrorCallback);
@@ -280,6 +390,7 @@ KontagentApi.prototype.trackNotificationResponse = function(uniqueTrackingTag, o
 * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
 * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
 * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+* @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
 * @param {function} [successCallback] The callback function to execute once message has been sent successfully
 * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
 */
@@ -294,6 +405,7 @@ KontagentApi.prototype.trackNotificationEmailSent = function(userId, recipientUs
 		if (optionalParams.subtype1) { apiParams.st1 = optionalParams.subtype1; }
 		if (optionalParams.subtype2) { apiParams.st2 = optionalParams.subtype2; }
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
+		if (optionalParams.data) { apiParams.data = this._base64Encode(optionalParams.data); }
 	}
 
 	this._sendMessage("nes", apiParams, successCallback, validationErrorCallback);
@@ -311,6 +423,7 @@ KontagentApi.prototype.trackNotificationEmailSent = function(userId, recipientUs
 * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
 * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
 * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+* @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
 * @param {function} [successCallback] The callback function to execute once message has been sent successfully
 * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
 */
@@ -325,6 +438,7 @@ KontagentApi.prototype.trackNotificationEmailResponse = function(uniqueTrackingT
 		if (optionalParams.subtype1) { apiParams.st1 = optionalParams.subtype1; }
 		if (optionalParams.subtype2) { apiParams.st2 = optionalParams.subtype2; }
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
+		if (optionalParams.data) { apiParams.data = this._base64Encode(optionalParams.data); }
 	}
 	
 	this._sendMessage("nei", apiParams, successCallback, validationErrorCallback);
@@ -343,6 +457,7 @@ KontagentApi.prototype.trackNotificationEmailResponse = function(uniqueTrackingT
 * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
 * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
 * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+* @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
 * @param {function} [successCallback] The callback function to execute once message has been sent successfully
 * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
 */
@@ -357,6 +472,7 @@ KontagentApi.prototype.trackStreamPost = function(userId, uniqueTrackingTag, typ
 		if (optionalParams.subtype1) { apiParams.st1 = optionalParams.subtype1; }
 		if (optionalParams.subtype2) { apiParams.st2 = optionalParams.subtype2; }
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
+		if (optionalParams.data) { apiParams.data = this._base64Encode(optionalParams.data); }
 	}
 
 	this._sendMessage("pst", apiParams, successCallback, validationErrorCallback);
@@ -375,6 +491,7 @@ KontagentApi.prototype.trackStreamPost = function(userId, uniqueTrackingTag, typ
 * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
 * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
 * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+* @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
 * @param {function} [successCallback] The callback function to execute once message has been sent successfully
 * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
 */
@@ -390,6 +507,7 @@ KontagentApi.prototype.trackStreamPostResponse = function(uniqueTrackingTag, typ
 		if (optionalParams.subtype1) { apiParams.st1 = optionalParams.subtype1; }
 		if (optionalParams.subtype2) { apiParams.st2 = optionalParams.subtype2; }
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
+		if (optionalParams.data) { apiParams.data = this._base64Encode(optionalParams.data); }
 	}
 
 	this._sendMessage("psr", apiParams, successCallback, validationErrorCallback);
@@ -406,6 +524,7 @@ KontagentApi.prototype.trackStreamPostResponse = function(uniqueTrackingTag, typ
 * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
 * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
 * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+* @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
 * @param {function} [successCallback] The callback function to execute once message has been sent successfully
 * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
 */
@@ -421,6 +540,7 @@ KontagentApi.prototype.trackEvent = function(userId, eventName, optionalParams, 
 		if (optionalParams.subtype1) { apiParams.st1 = optionalParams.subtype1; }
 		if (optionalParams.subtype2) { apiParams.st2 = optionalParams.subtype2; }
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
+		if (optionalParams.data) { apiParams.data = this._base64Encode(optionalParams.data); }
 	}	
 
 	this._sendMessage("evt", apiParams, successCallback, validationErrorCallback);
@@ -437,6 +557,7 @@ KontagentApi.prototype.trackEvent = function(userId, eventName, optionalParams, 
 * @param {string} [optionalParams.shortUniqueTrackingTag] 8-digit hex string used to match 
 *	ThirdPartyCommClicks->ApplicationAdded messages. 
 *	See the genShortUniqueTrackingTag() hesendMessagelper method.
+* @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
 * @param {function} [successCallback] The callback function to execute once message has been sent successfully
 * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
 */
@@ -446,6 +567,7 @@ KontagentApi.prototype.trackApplicationAdded = function(userId, optionalParams, 
 	if (optionalParams != null && typeof optionalParams != 'undefined') {
 		if (optionalParams.uniqueTrackingTag) { apiParams.u = optionalParams.uniqueTrackingTag; }
 		if (optionalParams.shortUniqueTrackingTag) { apiParams.su = optionalParams.shortUniqueTrackingTag; }
+		if (optionalParams.data) { apiParams.data = this._base64Encode(optionalParams.data); }
 	}
 
 	this._sendMessage("apa", apiParams, successCallback, validationErrorCallback);
@@ -455,11 +577,17 @@ KontagentApi.prototype.trackApplicationAdded = function(userId, optionalParams, 
 * Sends an Application Removed message to Kontagent.
 *
 * @param {int} userId The UID of the removing user
+* @param {object} [optionalParams] An object containing paramName => value
+* @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
 * @param {function} [successCallback] The callback function to execute once message has been sent successfully
 * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
 */
-KontagentApi.prototype.trackApplicationRemoved = function(userId, successCallback, validationErrorCallback) {
+KontagentApi.prototype.trackApplicationRemoved = function(userId, optionalParams, successCallback, validationErrorCallback) {
 	var apiParams = {s : userId};
+
+	if (optionalParams != null && typeof optionalParams != 'undefined') {
+		if (optionalParams.data) { apiParams.data = this._base64Encode(optionalParams.data); }
+	}
 	
 	this._sendMessage("apr", apiParams, successCallback, validationErrorCallback);
 }
@@ -475,6 +603,7 @@ KontagentApi.prototype.trackApplicationRemoved = function(userId, successCallbac
 * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
 * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
 * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+* @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
 * @param {function} [successCallback] The callback function to execute once message has been sent successfully
 * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
 */
@@ -490,6 +619,7 @@ KontagentApi.prototype.trackThirdPartyCommClick = function(type, shortUniqueTrac
 		if (optionalParams.subtype1) { apiParams.st1 = optionalParams.subtype1; }
 		if (optionalParams.subtype2) { apiParams.st2 = optionalParams.subtype2; }
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
+		if (optionalParams.data) { apiParams.data = this._base64Encode(optionalParams.data); }
 	}	
 	
 	this._sendMessage("ucc", apiParams, successCallback, validationErrorCallback);
@@ -502,6 +632,7 @@ KontagentApi.prototype.trackThirdPartyCommClick = function(type, shortUniqueTrac
 * @param {object} [optionalParams] An object containing paramName => value
 * @param {string} [optionalParams.ipAddress] The current users IP address
 * @param {string} [optionalParams.pageAddress] The current page address (ex: index.html)
+* @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
 * @param {function} [successCallback] The callback function to execute once message has been sent successfully
 * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
 */
@@ -513,6 +644,7 @@ KontagentApi.prototype.trackPageRequest = function(userId, optionalParams, succe
 	if (optionalParams != null && typeof optionalParams != 'undefined') {
 		if (optionalParams.ipAddress) { apiParams.ip = optionalParams.ipAddress; }
 		if (optionalParams.pageAddress) { apiParams.u = optionalParams.pageAddress; }
+		if (optionalParams.data) { apiParams.data = this._base64Encode(optionalParams.data); }
 	}
 
 	this._sendMessage("pgr", apiParams, successCallback, validationErrorCallback);
@@ -527,6 +659,7 @@ KontagentApi.prototype.trackPageRequest = function(userId, optionalParams, succe
 * @param {string} [optionalParams.gender] The gender of the user (m,f,u)
 * @param {string} [optionalParams.country] The 2-character country code of the user
 * @param {int} [optionalParams.friendCount] The friend count of the user
+* @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
 * @param {function} [successCallback] The callback function to execute once message has been sent successfully
 * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
 */
@@ -538,6 +671,7 @@ KontagentApi.prototype.trackUserInformation = function (userId, optionalParams, 
 		if (optionalParams.gender) { apiParams.g = optionalParams.gender; }
 		if (optionalParams.country) { apiParams.lc = optionalParams.country; }
 		if (optionalParams.friendCount) { apiParams.f = optionalParams.friendCount; }
+		if (optionalParams.data) { apiParams.data = this._base64Encode(optionalParams.data); }
 	}
 	
 	this._sendMessage("cpu", apiParams, successCallback, validationErrorCallback);
@@ -552,6 +686,7 @@ KontagentApi.prototype.trackUserInformation = function (userId, optionalParams, 
 * @param {int} [optionalParams.goalCount2] The amount to increment goal count 2 by
 * @param {int} [optionalParams.goalCount3] The amount to increment goal count 3 by
 * @param {int} [optionalParams.goalCount4] The amount to increment goal count 4 by
+* @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
 * @param {function} [successCallback] The callback function to execute once message has been sent successfully
 * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
 */
@@ -563,6 +698,7 @@ KontagentApi.prototype.trackGoalCount = function(userId, optionalParams, success
 		if (optionalParams.goalCount2) { apiParams.gc2 = optionalParams.goalCount2; }
 		if (optionalParams.goalCount3) { apiParams.gc3 = optionalParams.goalCount3; }
 		if (optionalParams.goalCount4) { apiParams.gc4 = optionalParams.goalCount4; }
+		if (optionalParams.data) { apiParams.data = this._base64Encode(optionalParams.data); }
 	}
 
 	this._sendMessage("gci", apiParams, successCallback, validationErrorCallback);
@@ -578,6 +714,7 @@ KontagentApi.prototype.trackGoalCount = function(userId, optionalParams, success
 * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
 * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
 * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+* @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
 * @param {function} [successCallback] The callback function to execute once message has been sent successfully
 * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
 */
@@ -592,6 +729,7 @@ KontagentApi.prototype.trackRevenue = function(userId, value, optionalParams, su
 		if (optionalParams.subtype1) { apiParams.st1 = optionalParams.subtype1; }
 		if (optionalParams.subtype2) { apiParams.st2 = optionalParams.subtype2; }
 		if (optionalParams.subtype3) { apiParams.st3 = optionalParams.subtype3; }
+		if (optionalParams.data) { apiParams.data = this._base64Encode(optionalParams.data); }
 	}
 
 	this._sendMessage("mtu", apiParams, successCallback, validationErrorCallback);

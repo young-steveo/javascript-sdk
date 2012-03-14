@@ -113,6 +113,7 @@ Full Class Reference
     * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
     * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
     * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+    * @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
     * @param {function} [successCallback] The callback function to execute once message has been sent successfully
     * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
     */
@@ -130,6 +131,7 @@ Full Class Reference
     * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
     * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
     * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+    * @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
     * @param {function} [successCallback] The callback function to execute once message has been sent successfully
     * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
     */
@@ -148,6 +150,7 @@ Full Class Reference
     * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
     * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
     * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+    * @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
     * @param {function} [successCallback] The callback function to execute once message has been sent successfully
     * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
     */
@@ -165,6 +168,7 @@ Full Class Reference
     * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
     * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
     * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+    * @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
     * @param {function} [successCallback] The callback function to execute once message has been sent successfully
     * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
     */
@@ -183,6 +187,7 @@ Full Class Reference
     * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
     * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
     * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+    * @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
     * @param {function} [successCallback] The callback function to execute once message has been sent successfully
     * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
     */
@@ -201,6 +206,7 @@ Full Class Reference
     * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
     * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
     * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+    * @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
     * @param {function} [successCallback] The callback function to execute once message has been sent successfully
     * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
     */
@@ -220,6 +226,7 @@ Full Class Reference
     * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
     * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
     * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+    * @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
     * @param {function} [successCallback] The callback function to execute once message has been sent successfully
     * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
     */
@@ -239,6 +246,7 @@ Full Class Reference
     * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
     * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
     * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+    * @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
     * @param {function} [successCallback] The callback function to execute once message has been sent successfully
     * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
     */
@@ -273,6 +281,7 @@ Full Class Reference
     * @param {string} [optionalParams.shortUniqueTrackingTag] 8-digit hex string used to match 
     *    ThirdPartyCommClicks->ApplicationAdded messages. 
     *    See the genShortUniqueTrackingTag() helper method.
+    * @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
     * @param {function} [successCallback] The callback function to execute once message has been sent successfully
     * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
     */
@@ -283,10 +292,12 @@ Full Class Reference
     * Sends an Application Removed message to Kontagent.
     *
     * @param {string} userId The UID of the removing user
+    * @param {object} [optionalParams] An object containing paramName => value
+    * @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
     * @param {function} [successCallback] The callback function to execute once message has been sent successfully
     * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
     */
-    KontagentApi.prototype.trackApplicationRemoved = function(userId, successCallback, validationErrorCallback) 
+    KontagentApi.prototype.trackApplicationRemoved = function(userId, optionalParams, successCallback, validationErrorCallback) 
 
 
     /*
@@ -300,6 +311,7 @@ Full Class Reference
     * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
     * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
     * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+    * @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
     * @param {function} [successCallback] The callback function to execute once message has been sent successfully
     * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
     */
@@ -313,6 +325,7 @@ Full Class Reference
     * @param {object} [optionalParams] An object containing paramName => value
     * @param {string} [optionalParams.ipAddress] The current users IP address
     * @param {string} [optionalParams.pageAddress] The current page address (ex: index.html)
+    * @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
     * @param {function} [successCallback] The callback function to execute once message has been sent successfully
     * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
     */
@@ -328,6 +341,7 @@ Full Class Reference
     * @param {string} [optionalParams.gender] The gender of the user (m,f,u)
     * @param {string} [optionalParams.country] The 2-character country code of the user
     * @param {int} [optionalParams.friendCount] The friend count of the user
+    * @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
     * @param {function} [successCallback] The callback function to execute once message has been sent successfully
     * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
     */
@@ -343,6 +357,7 @@ Full Class Reference
     * @param {int} [optionalParams.goalCount2] The amount to increment goal count 2 by
     * @param {int} [optionalParams.goalCount3] The amount to increment goal count 3 by
     * @param {int} [optionalParams.goalCount4] The amount to increment goal count 4 by
+    * @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
     * @param {function} [successCallback] The callback function to execute once message has been sent successfully
     * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
     */
@@ -359,6 +374,7 @@ Full Class Reference
     * @param {string} [optionalParams.subtype1] Subtype1 value (max 32 chars)
     * @param {string} [optionalParams.subtype2] Subtype2 value (max 32 chars)
     * @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+    * @param {string} [optionalParams.data] Additional JSON-formatted data to associate with the message
     * @param {function} [successCallback] The callback function to execute once message has been sent successfully
     * @param {function(error)} [validationErrorCallback] The callback function to execute on validation failure
     */
