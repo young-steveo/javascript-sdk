@@ -10,7 +10,7 @@
 */
 function KontagentApi(apiKey, optionalParams) 
 {
-	this._sdkVersion = "j00';
+	this._sdkVersion = "j00";
 
 	this._baseApiUrl = "http://api.geo.kontagent.net/api/v1/";
 	this._baseHttpsApiUrl = "https://api.geo.kontagent.net/api/v1/";
@@ -70,7 +70,7 @@ KontagentApi.prototype._base64Encode = function(data)
     var r = data.length % 3;
     
     return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
-}* @param {string} [optionalParams.subtype3] Subtype3 value (max 32 chars)
+}
 
 /*
 * Converts a string to the UTF-8 encoded version of the string.
