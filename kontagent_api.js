@@ -575,6 +575,7 @@ KontagentApi.prototype.trackApplicationAdded = function(userId, optionalParams, 
 
 /*
 * Sends an Application Removed message to Kontagent.
+
 *
 * @param {int} userId The UID of the removing user
 * @param {object} [optionalParams] An object containing paramName => value
@@ -911,6 +912,10 @@ KtValidator._validateS = function(messageType, paramName, paramValue) {
 	} else {
 		return true;
 	}
+}
+
+KtValidator._validateSdk = function(messageType, paramName, paramValue) {
+	return true;
 }
 
 KtValidator._validateSt1 = function(messageType, paramName, paramValue) {
