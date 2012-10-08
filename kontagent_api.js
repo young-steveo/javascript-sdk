@@ -223,7 +223,7 @@ KontagentApi.prototype._s4 = function() {
 *  @return {string} The unique tracking tag
 */
 KontagentApi.prototype.genUniqueTrackingTag = function() {
-	var uniqueTrackingTag = "";
+	var uniqueTrackingTag = "", i;
 	
 	for(i=0; i<4; i++) {
 		uniqueTrackingTag += this._s4();
@@ -238,7 +238,7 @@ KontagentApi.prototype.genUniqueTrackingTag = function() {
 *  @return {string} The short unique tracking tag
 */
 KontagentApi.prototype.genShortUniqueTrackingTag = function() {
-	var shortUniqueTrackingTag = "";
+	var shortUniqueTrackingTag = "", i;
 	
 	for(i=0; i<2; i++) {
 		shortUniqueTrackingTag += this._s4();
@@ -343,7 +343,7 @@ KontagentApi.prototype.trackNotificationSent = function(userId, recipientUserIds
 		if (optionalParams.data) { apiParams.data = this._base64Encode(optionalParams.data); }
 	}
 	
-	this._sendMessage("nts", apiParams, successCalback, validationErrorCallback);
+	this._sendMessage("nts", apiParams, successCallback, validationErrorCallback);
 }
 
 /*
